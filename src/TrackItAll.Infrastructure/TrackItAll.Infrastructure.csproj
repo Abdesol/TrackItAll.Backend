@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="BlobStorage\" />
+      <Folder Include="Email\" />
+      <Folder Include="Identity\" />
+      <Folder Include="Persistence\" />
+    </ItemGroup>
+
+</Project>
