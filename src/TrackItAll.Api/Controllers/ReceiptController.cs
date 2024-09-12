@@ -1,0 +1,41 @@
+using Microsoft.AspNetCore.Mvc;
+
+namespace TrackItAll.Api.Controllers;
+
+/// <summary>
+/// Controller for receipt operations.
+/// </summary>
+[ApiController]
+[Route("[controller]")]
+public class ReceiptController : ControllerBase
+{
+    /// <summary>
+    /// An end point to add a receipt.
+    /// </summary>
+    /// <param name="file">The file to add as a receipt.</param>
+    [HttpPost("add")]
+    public async Task<IActionResult> AddReceipt(IFormFile file)
+    {
+        return NoContent();
+    }
+    
+    /// <summary>
+    /// An end point to get a receipt.
+    /// </summary>
+    /// <param name="id">The id of the receipt to get.</param>
+    [HttpGet("get/{id}")]
+    public async Task<IActionResult> GetReceipt(string id)
+    {
+        return NoContent();
+    }
+    
+    /// <summary>
+    /// An end point to delete a receipt.
+    /// </summary>
+    /// <param name="id">The id of the receipt to delete.</param>
+    [HttpDelete("delete/{id}")]
+    public async Task<IActionResult> DeleteReceipt(string id)
+    {
+        return NoContent();
+    }
+}
