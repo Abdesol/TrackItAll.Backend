@@ -8,8 +8,6 @@ namespace TrackItAll.Api.Controllers;
 /// <summary>
 /// The controller for the accounts operation
 /// </summary>
-[AllowAnonymous]
-[Area("MicrosoftIdentity")]
 [ApiController]
 [Route("[controller]")]
 public class AccountController : ControllerBase
@@ -17,8 +15,8 @@ public class AccountController : ControllerBase
     [HttpGet("signin")]
     public IActionResult SignIn()
     {
-        var redirectUrl = Url.Action(nameof(Callback), "Account");
-        return Challenge(new AuthenticationProperties { RedirectUri = "/account/authenticated/" },
+        var redirectUrl = Url.Action("Authenticated", "Account");
+        return Challenge(new AuthenticationProperties { RedirectUri = redirectUrl },
             OpenIdConnectDefaults.AuthenticationScheme);
     }
     
@@ -32,9 +30,8 @@ public class AccountController : ControllerBase
     public async Task<IActionResult> Authenticated()
     {
         if (User.Identity is not { IsAuthenticated: true }) return Unauthorized();
-        var userId = User.FindFirst("sub")?.Value;
         var userEmail = User.FindFirst("emails")?.Value;
     
-        return Ok(new { message = "User successfully signed in", userId, userEmail });
+        return Ok(new { userEmail });
     }
 }
