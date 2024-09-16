@@ -20,10 +20,10 @@ public class AccountController : ControllerBase
             OpenIdConnectDefaults.AuthenticationScheme);
     }
     
-    [HttpGet("callback")]
+    [HttpPost("callback")]
     public async Task<IActionResult> Callback()
     {
-        return NoContent();
+        return Redirect("/account/authenticated");
     }
 
     [HttpGet("authenticated")]
