@@ -18,12 +18,18 @@ public class AccountController : ControllerBase
     public IActionResult SignIn()
     {
         var redirectUrl = Url.Action(nameof(Callback), "Account");
-        return Challenge(new AuthenticationProperties { RedirectUri = redirectUrl },
+        return Challenge(new AuthenticationProperties { RedirectUri = "/account/authenticated/" },
             OpenIdConnectDefaults.AuthenticationScheme);
     }
     
     [HttpGet("callback")]
     public async Task<IActionResult> Callback()
+    {
+        return NoContent();
+    }
+
+    [HttpGet("authenticated")]
+    public async Task<IActionResult> Authenticated()
     {
         if (User.Identity is not { IsAuthenticated: true }) return Unauthorized();
         var userId = User.FindFirst("sub")?.Value;

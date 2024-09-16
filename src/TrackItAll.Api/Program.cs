@@ -1,9 +1,5 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Identity.Web;
-using Microsoft.IdentityModel.Logging;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using TrackItAll.Api.Configuration;
 using TrackItAll.Application.Interfaces;
 using TrackItAll.Application.Services;
@@ -47,10 +43,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapFallback(context =>
-{
-    context.Response.Redirect("/home/error");
-    return Task.CompletedTask;
-});
 
 app.Run();
