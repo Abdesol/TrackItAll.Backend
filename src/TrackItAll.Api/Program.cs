@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
 using TrackItAll.Api.Configuration;
 using TrackItAll.Application.Interfaces;
 using TrackItAll.Application.Services;
@@ -22,6 +23,12 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddScoped<IReceiptService, ReceiptService>();
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddRazorPages()
+        .AddMicrosoftIdentityUI();
+}
+
 builder.Services.AddCors(CorsConfig.CorsPolicyConfig);
 
 builder.Services.AddEndpointsApiExplorer();
@@ -43,5 +50,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+if (app.Environment.IsDevelopment())
+{
+    app.MapRazorPages();
+}
 
 app.Run();
