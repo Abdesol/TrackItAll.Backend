@@ -19,21 +19,6 @@ public class HomeController : ControllerBase
     {
         return Ok("Hello, World!");
     }
-
-    [HttpGet("error")]
-    public IActionResult Error()
-    {
-        var error = Request.Query["error"];
-        var errorDescription = Request.Query["error_description"];
-        
-        return Ok(new
-        {
-            Message = "An error occurred during the authentication process.",
-            Error = error,
-            ErrorDescription = errorDescription
-        });
-    }
-
     
     [Authorize]
     [HttpGet("authorized")]
