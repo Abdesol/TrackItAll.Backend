@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,7 +8,6 @@ namespace TrackItAll.Api.Controllers;
 /// The controller for the root path
 /// </summary>
 [ApiController]
-[AllowAnonymous]
 [Route("[controller]")]
 public class HomeController : ControllerBase
 {
