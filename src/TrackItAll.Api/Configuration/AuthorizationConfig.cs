@@ -5,14 +5,12 @@ namespace TrackItAll.Api.Configuration
 {
     public static class AuthorizationConfig
     {
-        public static IServiceCollection ConfigureAuthorization(this IServiceCollection services)
+        public static void ConfigureAuthorization(this IServiceCollection services)
         {
             services.AddAuthorizationBuilder()
                 .SetDefaultPolicy(new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
                     .RequireAuthenticatedUser()
                     .Build());
-
-            return services;
         }
     }
 }

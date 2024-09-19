@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -11,17 +12,32 @@ namespace TrackItAll.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("[controller]")]
-public class AccountController : ControllerBase
+public class AccountController(IConfiguration configuration) : ControllerBase
 {
     /// <summary>
     /// An end point to signin with Azure Ad B2C. It redirects to the Azure Ad B2C login page.
     /// </summary>
-    [HttpGet("signin")]
+    [HttpGet("sign-in")]
     public async Task<IActionResult> SignIn()
     {
         var redirectUrl = Url.Action("Authenticated", "Account");
         return Challenge(new AuthenticationProperties { RedirectUri = redirectUrl },
             OpenIdConnectDefaults.AuthenticationScheme);
+    }
+
+    [HttpGet("sign-out")]
+    public new async Task<IActionResult> SignOut()
+    {
+        var home = $"{Request.Scheme}://{Request.Host}/";
+        var logoutUrl = configuration["AzureAdB2C:LogoutUrl"] + $"?post_logout_redirect_uri={home}";
+
+        var properties = new AuthenticationProperties
+        {
+            RedirectUri = logoutUrl
+        };
+
+        return SignOut(properties, OpenIdConnectDefaults.AuthenticationScheme,
+            CookieAuthenticationDefaults.AuthenticationScheme);
     }
 
     [HttpPost("callback")]
@@ -38,7 +54,7 @@ public class AccountController : ControllerBase
     {
         var result = await HttpContext.AuthenticateAsync(OpenIdConnectDefaults.AuthenticationScheme);
         IActionResult response = Unauthorized();
-        
+
         if (result.Succeeded)
         {
             var tokens = result.Properties.Items;
@@ -59,7 +75,7 @@ public class AccountController : ControllerBase
                 // ignore
             }
         }
-        
+
         return response;
     }
 }

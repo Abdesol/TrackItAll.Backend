@@ -40,7 +40,7 @@ namespace TrackItAll.Api.Configuration
                     {
                         OnRedirectToIdentityProvider = context =>
                         {
-                            if (context.Request.Path != "/account/signin")
+                            if (context.Request.Path != "/account/sign-in")
                             {
                                 var endpoint = context.HttpContext.GetEndpoint();
                                 context.Response.StatusCode = endpoint != null
