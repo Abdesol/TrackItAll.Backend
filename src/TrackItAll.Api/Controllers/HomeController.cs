@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,5 +26,12 @@ public class HomeController : ControllerBase
     public IActionResult GetAuthorized()
     {
         return Ok("Hello, Authorized World!");
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet("am-admin")]
+    public IActionResult AmAdmin()
+    {
+        return Ok("Yes, you are an admin!");
     }
 }

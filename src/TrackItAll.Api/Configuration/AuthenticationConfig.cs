@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+using TrackItAll.Infrastructure.Authentication;
+using TrackItAll.Infrastructure.Services;
 
 namespace TrackItAll.Api.Configuration
 {
@@ -9,7 +11,11 @@ namespace TrackItAll.Api.Configuration
     {
         public static void ConfigureAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            services.AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
                 .AddJwtBearer(options =>
                 {
                     configuration.GetSection("AzureAdB2C").Bind(options);
@@ -21,6 +27,15 @@ namespace TrackItAll.Api.Configuration
                         ValidateAudience = true,
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
+                        ValidateTokenReplay = true
+                    };
+
+                    options.Events = new JwtBearerEvents()
+                    {
+                        OnTokenValidated = new AzureAdB2CHelper(
+                                services.BuildServiceProvider().GetService<ILoggerFactory>()!,
+                                services.BuildServiceProvider().GetService<IAzureAdTokenService>()!
+                            ).OnTokenValidated
                     };
                 });
 

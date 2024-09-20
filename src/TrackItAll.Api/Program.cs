@@ -1,11 +1,7 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.IdentityModel.Tokens;
 using TrackItAll.Api.Configuration;
 using TrackItAll.Application.Interfaces;
 using TrackItAll.Application.Services;
+using TrackItAll.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +13,12 @@ builder.Services.AddControllers();
 
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddScoped<IReceiptService, ReceiptService>();
+builder.Services.AddSingleton<IAzureAdTokenService, AzureAdTokenService>(_ => new AzureAdTokenService(
+    builder.Configuration["AzureAdB2C:GraphUrl"]!,
+    builder.Configuration["AzureAdB2C:TenantId"]!,
+    builder.Configuration["AzureAdB2C:ClientId"]!,
+    builder.Configuration["AzureAdB2C:ClientSecret"]!
+));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
