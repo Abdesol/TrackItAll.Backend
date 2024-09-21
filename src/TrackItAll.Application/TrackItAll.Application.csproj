@@ -11,4 +11,12 @@
       <Folder Include="Exceptions\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Azure.Storage.Queues" Version="12.20.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\TrackItAll.Infrastructure\TrackItAll.Infrastructure.csproj" />
+    </ItemGroup>
+
 </Project>

@@ -8,10 +8,8 @@ using TrackItAll.Infrastructure.Services;
 
 namespace TrackItAll.Infrastructure.Authentication;
 
-public class AzureAdB2CHelper(ILoggerFactory loggerFactory, IAzureAdTokenService azureAdTokenService)
+public class AzureAdB2CHelper(ILogger<AzureAdB2CHelper> logger, IAzureAdTokenService azureAdTokenService)
 {
-    private readonly ILogger<AzureAdB2CHelper> _logger = new Logger<AzureAdB2CHelper>(loggerFactory);
-
     public async Task OnTokenValidated(TokenValidatedContext context)
     {
         try
@@ -52,7 +50,7 @@ public class AzureAdB2CHelper(ILoggerFactory loggerFactory, IAzureAdTokenService
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error while validating the token");
+            logger.LogError(e, "Error while validating the token");
         }
     }
 }

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using TrackItAll.Infrastructure.Authentication;
-using TrackItAll.Infrastructure.Services;
 
 namespace TrackItAll.Api.Configuration
 {
@@ -32,10 +31,7 @@ namespace TrackItAll.Api.Configuration
 
                     options.Events = new JwtBearerEvents()
                     {
-                        OnTokenValidated = new AzureAdB2CHelper(
-                                services.BuildServiceProvider().GetService<ILoggerFactory>()!,
-                                services.BuildServiceProvider().GetService<IAzureAdTokenService>()!
-                            ).OnTokenValidated
+                        OnTokenValidated = services.BuildServiceProvider().GetService<AzureAdB2CHelper>()!.OnTokenValidated
                     };
                 });
 

@@ -17,7 +17,7 @@ public class AzureAdTokenService(
 
     private string? _graphApiAccessToken;
 
-    public string GraphUrl { get; set; } = aadGraphUri;
+    public string GraphUrl { get; } = aadGraphUri;
 
     public async Task<string> GetGraphApiAccessTokenAsync()
     {

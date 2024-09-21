@@ -1,9 +1,11 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TrackItAll.Application.Interfaces;
 
 namespace TrackItAll.Api.Controllers;
 
@@ -12,7 +14,10 @@ namespace TrackItAll.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("[controller]")]
-public class AccountController(IConfiguration configuration) : ControllerBase
+public class AccountController(
+    IConfiguration configuration,
+    IAccountService accountService)
+    : ControllerBase
 {
     /// <summary>
     /// An end point to signin with Azure Ad B2C. It redirects to the Azure Ad B2C login page.
@@ -62,6 +67,16 @@ public class AccountController(IConfiguration configuration) : ControllerBase
             {
                 access_token = tokens[".Token.access_token"]
             });
+
+            if (result.Principal.HasClaim(c => c.Type == "newUser"))
+            {
+                if (result.Principal.FindFirstValue("newUser") == "true")
+                {
+                    var oid = result.Principal.Claims.FirstOrDefault(c => c.Type.Contains("objectidentifier"))?.Value;
+                    var email = result.Principal.Claims.FirstOrDefault(c => c.Type == "emails")?.Value;
+                    _ = accountService.AddUserEmailToSignUpQueueAsync(oid!, email!);
+                }
+            }
         }
 
         foreach (var cookie in Request.Cookies)
