@@ -1,5 +1,6 @@
 using System.Net.Mail;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using TrackItAll.Application.Interfaces;
 
 namespace TrackItAll.Application.Services;
@@ -19,11 +20,11 @@ public class EmailService(IConfiguration configuration) : IEmailService
     {
         var mailMessage = new MailMessage
         {
-            From = new MailAddress(configuration["Smtp:Sender"]!),
+            From = new MailAddress(configuration["Smtp:Username"]!),
             Subject = "Welcome to TrackItAll!",
             Body = "<h1>Thank you for signing up!</h1>",
             IsBodyHtml = true,
-            To = { email }
+            To = { email },
         };
 
         await _smtpClient.SendMailAsync(mailMessage);

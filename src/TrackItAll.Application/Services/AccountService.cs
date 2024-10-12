@@ -5,7 +5,6 @@ using TrackItAll.Infrastructure.Authentication;
 namespace TrackItAll.Application.Services;
 
 public class AccountService(
-    AzureAdB2CHelper azureAdB2CHelper,
     IQueueService queueService,
     ILogger<AccountService> logger) : IAccountService
 {
