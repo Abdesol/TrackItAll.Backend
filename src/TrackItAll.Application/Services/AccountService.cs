@@ -6,13 +6,18 @@ namespace TrackItAll.Application.Services;
 
 public class AccountService(
     IQueueService queueService,
+    AzureAdB2CHelper azureAdB2CHelper,
     ILogger<AccountService> logger) : IAccountService
 {
     public async Task AddUserEmailToSignUpQueueAsync(string oid, string email)
     {
         try
         {
-            await queueService.AddUserEmailToSignUpQueueAsync(email);
+            if (!await azureAdB2CHelper.IsUserOnBoarded(oid))
+            {
+                await queueService.AddUserEmailToSignUpQueueAsync(email);
+                await azureAdB2CHelper.UpdateUserOnBoardingStatusAsync(oid);
+            }
         }
         catch (Exception e)
         {
