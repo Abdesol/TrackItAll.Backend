@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TrackItAll.Api.Controllers;
@@ -10,21 +12,23 @@ namespace TrackItAll.Api.Controllers;
 public class ReceiptController : ControllerBase
 {
     /// <summary>
-    /// An end point to add a receipt.
+    /// An end point to get a receipt.
     /// </summary>
-    /// <param name="file">The file to add as a receipt.</param>
-    [HttpPost("add")]
-    public async Task<IActionResult> AddReceipt(IFormFile file)
+    /// <param name="id">The id of the receipt to get.</param>
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetReceipt(string id)
     {
         return NoContent();
     }
     
     /// <summary>
-    /// An end point to get a receipt.
+    /// An end point to add a receipt.
     /// </summary>
-    /// <param name="id">The id of the receipt to get.</param>
-    [HttpGet("get/{id}")]
-    public async Task<IActionResult> GetReceipt(string id)
+    /// <param name="expenseId">The id of the expense to add the receipt to.</param>
+    /// <param name="file">The file to add as a receipt.</param>
+    [Authorize]
+    [HttpPost("add/{expenseId}")]
+    public async Task<IActionResult> AddReceipt(string expenseId, IFormFile file)
     {
         return NoContent();
     }
@@ -33,6 +37,7 @@ public class ReceiptController : ControllerBase
     /// An end point to delete a receipt.
     /// </summary>
     /// <param name="id">The id of the receipt to delete.</param>
+    [Authorize]
     [HttpDelete("delete/{id}")]
     public async Task<IActionResult> DeleteReceipt(string id)
     {

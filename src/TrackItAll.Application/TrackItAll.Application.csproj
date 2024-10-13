@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Dtos\" />
       <Folder Include="Exceptions\" />
     </ItemGroup>
 
@@ -16,6 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\TrackItAll.Domain\TrackItAll.Domain.csproj" />
       <ProjectReference Include="..\TrackItAll.Infrastructure\TrackItAll.Infrastructure.csproj" />
     </ItemGroup>
 

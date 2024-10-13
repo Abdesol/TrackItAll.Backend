@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TrackItAll.Application.Interfaces;
+using TrackItAll.Infrastructure.Services;
 
 namespace TrackItAll.Api.Controllers;
 
@@ -16,7 +17,8 @@ namespace TrackItAll.Api.Controllers;
 [Route("[controller]")]
 public class AccountController(
     IConfiguration configuration,
-    IAccountService accountService)
+    IAccountService accountService,
+    IAzureAdTokenService azureAdTokenService)
     : ControllerBase
 {
     /// <summary>
@@ -75,8 +77,8 @@ public class AccountController(
             {
                 if (result.Principal.FindFirstValue("newUser") == "true")
                 {
-                    var oid = result.Principal.Claims.FirstOrDefault(c => c.Type.Contains("objectidentifier"))?.Value;
-                    var email = result.Principal.Claims.FirstOrDefault(c => c.Type == "emails")?.Value;
+                    var oid = await azureAdTokenService.GetUserObjectId(result.Principal);
+                    var email = await azureAdTokenService.GetUserEmail(result.Principal);
                     _ = accountService.AddUserEmailToSignUpQueueAsync(oid!, email!);
                 }
             }

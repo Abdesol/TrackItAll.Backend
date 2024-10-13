@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.Identity.Client;
 
 namespace TrackItAll.Infrastructure.Services;
@@ -39,5 +40,19 @@ public class AzureAdTokenService(
             .ExecuteAsync();
         _graphApiAccessToken = result.AccessToken;
         return _graphApiAccessToken;
+    }
+
+    /// <inheritdoc />
+    public async Task<string?> GetUserObjectId(ClaimsPrincipal claimsPrincipal)
+    {
+        var oidClaim = claimsPrincipal.Claims.FirstOrDefault(c => c.Type.Contains("objectidentifier"));
+        return oidClaim?.Value;
+    }
+
+    /// <inheritdoc />
+    public async Task<string?> GetUserEmail(ClaimsPrincipal claimsPrincipal)
+    {
+        var userEmail = claimsPrincipal.Claims.FirstOrDefault(c => c.Type == "emails");
+        return userEmail?.Value;
     }
 }
