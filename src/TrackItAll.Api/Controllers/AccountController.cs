@@ -30,6 +30,9 @@ public class AccountController(
             OpenIdConnectDefaults.AuthenticationScheme);
     }
 
+    /// <summary>
+    /// An endpoint to sign out with azure ad b2c. After signing out, It redirects to the home page.
+    /// </summary>
     [HttpGet("sign-out")]
     public new async Task<IActionResult> SignOut()
     {

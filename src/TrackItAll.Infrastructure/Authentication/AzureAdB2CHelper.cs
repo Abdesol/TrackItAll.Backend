@@ -11,11 +11,22 @@ using TrackItAll.Infrastructure.Services;
 
 namespace TrackItAll.Infrastructure.Authentication;
 
+/// <summary>
+/// A helper class that interacts with Azure AD B2C, performing operations such as token validation, checking user onboarding status, and updating user attributes.
+/// </summary>
+/// <param name="logger">An instance of <see cref="ILogger{AzureAdB2CHelper}"/> for logging errors and important information.</param>
+/// <param name="configuration"><see cref="IConfiguration"/> instance to access configuration values.</param>
+/// <param name="azureAdTokenService">Service to retrieve Azure AD access tokens, using <see cref="IAzureAdTokenService"/>.</param>
 public class AzureAdB2CHelper(
     ILogger<AzureAdB2CHelper> logger,
     IConfiguration configuration,
     IAzureAdTokenService azureAdTokenService)
 {
+    /// <summary>
+    /// Validates the token received and retrieves the user's group membership from Azure AD. 
+    /// Adds claims for the user's roles based on the groups they belong to.
+    /// </summary>
+    /// <param name="context">The <see cref="TokenValidatedContext"/> containing the security token and user claims.</param>
     public async Task OnTokenValidated(TokenValidatedContext context)
     {
         try
@@ -60,6 +71,11 @@ public class AzureAdB2CHelper(
         }
     }
 
+    /// <summary>
+    /// Checks if the user with the given object ID (oid) is onboarded by querying their custom attribute in Azure AD B2C.
+    /// </summary>
+    /// <param name="oid">The object ID of the user in Azure AD.</param>
+    /// <returns>A boolean indicating whether the user is onboarded or not.</returns>
     public async Task<bool> IsUserOnBoarded(string oid)
     {
         try
@@ -82,7 +98,8 @@ public class AzureAdB2CHelper(
                 var jsonResponse = await response.Content.ReadAsStringAsync();
                 var user = JsonDocument.Parse(jsonResponse);
 
-                return user.RootElement.TryGetProperty(userIsOnboardedKey, out var onboardedValue) && onboardedValue.GetBoolean();
+                return user.RootElement.TryGetProperty(userIsOnboardedKey, out var onboardedValue) &&
+                       onboardedValue.GetBoolean();
             }
         }
         catch (Exception e)
@@ -93,6 +110,10 @@ public class AzureAdB2CHelper(
         return true;
     }
 
+    /// <summary>
+    /// Updates the custom "IsUserOnBoarded" attribute of the user with the given object ID (oid) in Azure AD B2C.
+    /// </summary>
+    /// <param name="oid">The object ID of the user in Azure AD.</param>
     public async Task UpdateUserOnBoardingStatusAsync(string oid)
     {
         try

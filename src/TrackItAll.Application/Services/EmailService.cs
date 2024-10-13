@@ -5,6 +5,10 @@ using TrackItAll.Application.Interfaces;
 
 namespace TrackItAll.Application.Services;
 
+/// <summary>
+/// A service for sending emails.
+/// </summary>
+/// <param name="configuration">An instance of <see cref="IConfiguration"/> to access the configuration settings</param>
 public class EmailService(IConfiguration configuration) : IEmailService
 {
     private readonly SmtpClient _smtpClient = new(configuration["Smtp:Host"])
@@ -16,6 +20,7 @@ public class EmailService(IConfiguration configuration) : IEmailService
         EnableSsl = true,
     };
     
+    /// <inheritdoc/>
     public async Task SendOnboardingEmailAsync(string email)
     {
         var mailMessage = new MailMessage

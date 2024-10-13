@@ -28,6 +28,10 @@ public class HomeController : ControllerBase
         return Ok("Hello, Authorized World!");
     }
 
+    /// <summary>
+    /// An endpoint used to test roles whenever role test is required for the admin user.
+    /// </summary>
+    /// <returns></returns>
     [Authorize(Roles = "Admin")]
     [HttpGet("am-admin")]
     public IActionResult AmAdmin()
