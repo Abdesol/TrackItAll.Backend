@@ -26,13 +26,13 @@ public class ExpenseController(IExpenseService expenseService, IAzureAdTokenServ
     [HttpPost("add")]
     public async Task<IActionResult> AddExpense(AddExpenseRequestDto addExpenseRequestDto)
     {
+        var ownerId = await azureAdTokenService.GetUserObjectId(User);
         var addExpenseServiceResponseDto =
             await expenseService.AddExpense(
+                ownerId!,
                 addExpenseRequestDto.Amount!.Value,
                 addExpenseRequestDto.Description!,
-                addExpenseRequestDto.CategoryId!.Value,
-                addExpenseRequestDto.Date!.Value
-            );
+                addExpenseRequestDto.CategoryId!.Value);
 
         if (!addExpenseServiceResponseDto.IsSuccessfull)
             return BadRequest(addExpenseServiceResponseDto.ErrorMessage);
@@ -48,7 +48,7 @@ public class ExpenseController(IExpenseService expenseService, IAzureAdTokenServ
     [HttpGet("{id}")]
     public async Task<IActionResult> GetExpense(string id)
     {
-        var (isSuccess, result, expense) = await VerifyExpense(HttpContext.User, id);
+        var (isSuccess, result, expense, _) = await VerifyExpense(User, id);
         if (!isSuccess)
             return result;
         
@@ -64,13 +64,14 @@ public class ExpenseController(IExpenseService expenseService, IAzureAdTokenServ
     [HttpPut("update")]
     public async Task<IActionResult> UpdateExpense(UpdateExpenseRequestDto updateExpenseRequestDto)
     {
-        var (isSuccess, result, _) = await VerifyExpense(HttpContext.User, updateExpenseRequestDto.Id!);
+        var (isSuccess, result, _, ownerId) = await VerifyExpense(User, updateExpenseRequestDto.Id!);
         if (!isSuccess)
             return result;
 
         var updateExpenseServiceResponseDto =
             await expenseService.UpdateExpense(
                 updateExpenseRequestDto.Id!,
+                ownerId,
                 updateExpenseRequestDto.Amount!,
                 updateExpenseRequestDto.Description,
                 updateExpenseRequestDto.CategoryId,
@@ -91,11 +92,11 @@ public class ExpenseController(IExpenseService expenseService, IAzureAdTokenServ
     [HttpDelete("delete/{id}")]
     public async Task<IActionResult> DeleteExpense(string id)
     {
-        var (isSuccess, result, _) = await VerifyExpense(HttpContext.User, id);
+        var (isSuccess, result, _, ownerId) = await VerifyExpense(User, id);
         if (!isSuccess)
             return result!;
 
-        var deleteExpenseServiceResponseDto = await expenseService.DeleteExpense(id);
+        var deleteExpenseServiceResponseDto = await expenseService.DeleteExpense(id, ownerId);
 
         if (!deleteExpenseServiceResponseDto.IsSuccessfull)
             return BadRequest(deleteExpenseServiceResponseDto.ErrorMessage);
@@ -110,7 +111,7 @@ public class ExpenseController(IExpenseService expenseService, IAzureAdTokenServ
     [HttpGet("list")]
     public async Task<IActionResult> ListExpenses()
     {
-        var oid = await azureAdTokenService.GetUserObjectId(HttpContext.User);
+        var oid = await azureAdTokenService.GetUserObjectId(User);
         var expensesList = await expenseService.ListExpenses(oid!);
 
         var hostPath = $"{Request.Scheme}://{Request.Host}";
@@ -131,17 +132,20 @@ public class ExpenseController(IExpenseService expenseService, IAzureAdTokenServ
     /// <summary>
     /// A helper method to verify if the user is the owner of the expense.
     /// </summary>
-    private async Task<(bool isSuccess, ObjectResult? result, Expense? expense)> VerifyExpense(ClaimsPrincipal claimsPrincipal, string id)
+    private async Task<(bool isSuccess, ObjectResult? result, Expense? expense, string ownerId)> VerifyExpense(ClaimsPrincipal claimsPrincipal, string id)
     {
         var oid = await azureAdTokenService.GetUserObjectId(claimsPrincipal);
         var userRoles = claimsPrincipal.Claims.Select(c => c.Type);
+        
+        if (oid is null)
+            return (false, Unauthorized("The user is not authenticated"), null, null);
 
-        var expense = await expenseService.GetExpense(id);
+        var expense = await expenseService.GetExpense(id, oid);
         if (expense is null)
-            return (false, BadRequest("The id of the expense is not found in the database"), null);
+            return (false, BadRequest("The id of the expense is not found in the database"), null, oid);
 
         return expense.OwnerId == oid || userRoles.Contains("Admin")
-            ? (true, null, expense)
-            : (false, Unauthorized("You are not the owner of this expense"), null);
+            ? (true, null, expense, oid)
+            : (false, Unauthorized("You are not the owner of this expense"), null, oid);
     }
 }

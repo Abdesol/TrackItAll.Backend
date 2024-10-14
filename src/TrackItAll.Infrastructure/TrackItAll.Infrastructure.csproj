@@ -10,13 +10,12 @@
       <Folder Include="BlobStorage\" />
       <Folder Include="Email\" />
       <Folder Include="Identity\" />
-      <Folder Include="Persistence\" />
     </ItemGroup>
     
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
         <PackageReference Include="Microsoft.Identity.Client" Version="4.64.1" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+        <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.42.0" />
     </ItemGroup>
 
 </Project>

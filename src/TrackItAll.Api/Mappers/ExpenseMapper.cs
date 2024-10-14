@@ -25,6 +25,7 @@ public static class ExpenseMapper
             expense.Description,
             expense.Date,
             expense.CategoryId,
+            expense.Category!.Name,
             receiptUrl);
     }
 
@@ -44,6 +45,7 @@ public static class ExpenseMapper
             expense.Description,
             expense.Date,
             expense.CategoryId,
+            expense.Category!.Name,
             receiptUrl
         );
     }
@@ -62,6 +64,7 @@ public static class ExpenseMapper
             expense.Description,
             expense.Date,
             expense.CategoryId,
+            expense.Category!.Name,
             receiptUrl
         );
     }

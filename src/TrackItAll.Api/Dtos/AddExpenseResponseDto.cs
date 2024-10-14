@@ -6,5 +6,6 @@ public record AddExpenseResponseDto(
     string Description,
     DateTime Date,
     int CategoryId,
+    string Category,
     string? ReceiptUrl = null
 );

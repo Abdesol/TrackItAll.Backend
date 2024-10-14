@@ -6,5 +6,6 @@ public record UpdateExpenseResponseDto(
     string Description,
     DateTime Date,
     int categoryId,
+    string Category,
     string? ReceiptUrl = null
 );
