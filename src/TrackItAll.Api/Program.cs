@@ -1,3 +1,5 @@
+using Azure.Storage;
+using Azure.Storage.Blobs;
 using Microsoft.Azure.Cosmos;
 using TrackItAll.Api.Configuration;
 using TrackItAll.Application.Interfaces;
@@ -14,23 +16,42 @@ builder.Services.AddCors(CorsConfig.CorsPolicyConfig);
 
 builder.Services.AddControllers();
 
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<ICacheService, MemoryCacheService>();
+
 builder.Services.AddSingleton<CosmosClient>(_ =>
-    new CosmosClient(builder.Configuration["AzureCosmos:Endpoint"], 
+    new CosmosClient(builder.Configuration["AzureCosmos:Endpoint"],
         builder.Configuration["AzureCosmos:Key"]));
+
+builder.Services.AddSingleton<BlobServiceClient>(_ =>
+    new BlobServiceClient(builder.Configuration["AzureStorage:ConnectionString"]));
 
 builder.Services.AddSingleton<IContainerFactory, ContainerFactory>();
 
 builder.Services.AddScoped<IExpenseService, ExpenseService>(provider =>
 {
     var containerFactory = provider.GetRequiredService<IContainerFactory>();
-    var container = containerFactory.GetContainer(
+    var container = containerFactory.GetCosmosContainer(
         builder.Configuration["AzureCosmos:DatabaseName"]!,
         builder.Configuration["AzureCosmos:ContainerName"]!);
-    
+
     return new ExpenseService(container);
 });
+
+builder.Services.AddScoped<IReceiptService, ReceiptService>(provider =>
+{
+    var containerFactory = provider.GetRequiredService<IContainerFactory>();
+    var container = containerFactory.GetBlobContainer(builder.Configuration["AzureBlob:ContainerName"]!);
     
-builder.Services.AddScoped<IReceiptService, ReceiptService>();
+    var storageSharedKeyCredential = new StorageSharedKeyCredential(
+        builder.Configuration["AzureStorage:Name"]!,
+        builder.Configuration["AzureStorage:Key"]!
+    );
+    
+    var cacheService = provider.GetRequiredService<ICacheService>();
+
+    return new ReceiptService(container, storageSharedKeyCredential, cacheService);
+});
 
 builder.Services.AddScoped<IAccountService, AccountService>();
 

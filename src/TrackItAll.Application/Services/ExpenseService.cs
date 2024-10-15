@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using TrackItAll.Application.Dtos;
 using TrackItAll.Application.Interfaces;
 using TrackItAll.Domain.Entities;
+using TrackItAll.Shared.Utils;
 
 namespace TrackItAll.Application.Services;
 
@@ -24,7 +25,7 @@ public class ExpenseService(Container container) : IExpenseService
         
         var expense = new Expense()
         {
-            Id = GenerateUniqueId(),
+            Id = UniqueIdGenerator.Generate(),
             OwnerId = ownerId,
             Date = DateTime.Now,
             Amount = amount,
@@ -156,13 +157,22 @@ public class ExpenseService(Container container) : IExpenseService
     }
     
     /// <inheritdoc />
-    public async Task<bool> SetReceiptId(string id)
+    public async Task<bool> SetReceiptId(string expenseId, string ownerId, string? receiptId)
     {
-        throw new NotImplementedException();
-    }
+        try
+        {
+            var response = await container.ReadItemAsync<Expense>(expenseId, new PartitionKey(ownerId));
+            var expenseToUpdate = response.Resource;
 
-    private static string GenerateUniqueId()
-    {
-        return Ulid.NewUlid().ToString();
+            expenseToUpdate.ReceiptId = receiptId;
+
+            await container.ReplaceItemAsync(expenseToUpdate, expenseId, new PartitionKey(ownerId));
+
+            return true;
+        }
+        catch (CosmosException)
+        {
+            return false;
+        }
     }
 }

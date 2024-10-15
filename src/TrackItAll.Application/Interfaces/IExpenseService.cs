@@ -67,5 +67,5 @@ public interface IExpenseService
     /// </summary>
     /// <param name="id">id of the receipt from azure blob storage</param>
     /// <returns></returns>
-    Task<bool> SetReceiptId(string id);
+    Task<bool> SetReceiptId(string expenseId, string ownerId, string? receiptId);
 }

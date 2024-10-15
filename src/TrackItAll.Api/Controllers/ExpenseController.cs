@@ -15,8 +15,8 @@ namespace TrackItAll.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("[controller]")]
-public class ExpenseController(IExpenseService expenseService, IAzureAdTokenService azureAdTokenService)
-    : ControllerBase
+public class ExpenseController(IAzureAdTokenService azureAdTokenService, IExpenseService expenseService)
+    : BaseController(azureAdTokenService, expenseService)
 {
     /// <summary>
     /// An end point to add an expense.
@@ -50,11 +50,11 @@ public class ExpenseController(IExpenseService expenseService, IAzureAdTokenServ
     {
         var (isSuccess, result, expense, _) = await VerifyExpense(User, id);
         if (!isSuccess)
-            return result;
-        
+            return result!;
+
         var hostPath = $"{Request.Scheme}://{Request.Host}";
         return Ok(expense!.ToResponseDto(hostPath));
-    } 
+    }
 
     /// <summary>
     /// An end point to update an expense.
@@ -66,7 +66,7 @@ public class ExpenseController(IExpenseService expenseService, IAzureAdTokenServ
     {
         var (isSuccess, result, _, ownerId) = await VerifyExpense(User, updateExpenseRequestDto.Id!);
         if (!isSuccess)
-            return result;
+            return result!;
 
         var updateExpenseServiceResponseDto =
             await expenseService.UpdateExpense(
@@ -127,25 +127,5 @@ public class ExpenseController(IExpenseService expenseService, IAzureAdTokenServ
     {
         var categoriesList = await expenseService.GetCategories();
         return Ok(categoriesList);
-    }
-
-    /// <summary>
-    /// A helper method to verify if the user is the owner of the expense.
-    /// </summary>
-    private async Task<(bool isSuccess, ObjectResult? result, Expense? expense, string ownerId)> VerifyExpense(ClaimsPrincipal claimsPrincipal, string id)
-    {
-        var oid = await azureAdTokenService.GetUserObjectId(claimsPrincipal);
-        var userRoles = claimsPrincipal.Claims.Select(c => c.Type);
-        
-        if (oid is null)
-            return (false, Unauthorized("The user is not authenticated"), null, null);
-
-        var expense = await expenseService.GetExpense(id, oid);
-        if (expense is null)
-            return (false, BadRequest("The id of the expense is not found in the database"), null, oid);
-
-        return expense.OwnerId == oid || userRoles.Contains("Admin")
-            ? (true, null, expense, oid)
-            : (false, Unauthorized("You are not the owner of this expense"), null, oid);
     }
 }
