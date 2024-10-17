@@ -14,6 +14,7 @@ public class ReceiptService(
     ICacheService cacheService)
     : IReceiptService
 {
+    /// <inheritdoc/>
     public async Task<ReceiptServiceResponseDto> UploadReceiptAsync(Stream fileStream, string fileExtension)
     {
         var id = UniqueIdGenerator.Generate();
@@ -31,6 +32,7 @@ public class ReceiptService(
         }
     }
 
+    /// <inheritdoc/>
     public async Task<DeleteReceiptServiceResponseDto> DeleteReceiptAsync(string receiptId)
     {
         try
@@ -50,6 +52,7 @@ public class ReceiptService(
         }
     }
 
+    /// <inheritdoc/>
     public async Task<ReceiptServiceResponseDto> UpdateReceiptAsync(string existingFileName, Stream newFileStream,
         string newFileExtension)
     {
@@ -66,6 +69,7 @@ public class ReceiptService(
         }
     }
 
+    /// <inheritdoc/>
     public async Task<GetReceiptServiceResponseDto> GetReceiptUrl(string receiptId)
     {
         var cacheKey = $"receipt_{receiptId}";

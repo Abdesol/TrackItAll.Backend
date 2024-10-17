@@ -6,6 +6,9 @@ using TrackItAll.Infrastructure.Services;
 
 namespace TrackItAll.Api.Controllers;
 
+/// <summary>
+/// A controller that is inherited by other controllers to make use of the internal methods provided globally for several operations on the endpoint
+/// </summary>
 public class BaseController
     : ControllerBase
 {
@@ -17,8 +20,15 @@ public class BaseController
         _azureAdTokenService = azureAdTokenService;
         _expenseService = expenseService;
     }
-    
-    protected async Task<(bool isSuccess, ObjectResult? result, Expense? expense, string ownerId)> VerifyExpense(ClaimsPrincipal claimsPrincipal, string id)
+
+    /// <summary>
+    /// A method used to verify an expense id with requirements like it needs to belong to the user requesting it
+    /// </summary>
+    /// <param name="claimsPrincipal">the user identity claims principal</param>
+    /// <param name="id">id of the expense</param>
+    /// <returns>returns a tupe of true value if successful, output result to return if not successful, the expense object and the owner id for indexing in the database </returns>
+    protected async Task<(bool isSuccess, ObjectResult? result, Expense? expense, string ownerId)> VerifyExpense(
+        ClaimsPrincipal claimsPrincipal, string id)
     {
         var oid = await _azureAdTokenService.GetUserObjectId(claimsPrincipal);
         var userRoles = claimsPrincipal.Claims.Select(c => c.Type);

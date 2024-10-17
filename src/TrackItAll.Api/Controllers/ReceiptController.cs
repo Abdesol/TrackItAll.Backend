@@ -62,6 +62,12 @@ public class ReceiptController(
         return Ok(new ReceiptResponseDto(receiptUrl));
     }
 
+    /// <summary>
+    /// An endpoint used to update the receipt file in the database
+    /// </summary>
+    /// <param name="expenseId">id of the expense to replace the new receipt file with</param>
+    /// <param name="file">the receipt file to replace it with</param>
+    /// <returns></returns>
     [HttpPut("update/{expenseId}")]
     public async Task<IActionResult> UpdateReceipt(string expenseId, IFormFile file)
     {

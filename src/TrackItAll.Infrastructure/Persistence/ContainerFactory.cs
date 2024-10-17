@@ -8,6 +8,7 @@ public class ContainerFactory(CosmosClient cosmosClient, BlobServiceClient blobS
     private readonly Dictionary<string, Container> _cosmosContainers = new();
     private readonly Dictionary<string, BlobContainerClient> _blobContainers = new();
     
+    /// <inheritdoc />
     public Container GetCosmosContainer(string databaseName, string containerName)
     {
         var key = $"{databaseName}:{containerName}";
@@ -20,6 +21,7 @@ public class ContainerFactory(CosmosClient cosmosClient, BlobServiceClient blobS
         return newContainer;
     }
 
+    /// <inheritdoc />
     public BlobContainerClient GetBlobContainer(string containerName)
     {
         if (_blobContainers.TryGetValue(containerName, out var container))
