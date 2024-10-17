@@ -13,16 +13,17 @@ namespace TrackItAll.Application.Services;
 /// This service interacts with Azure Cosmos DB for expense data management and Azure Table Storage for category retrieval.
 /// </summary>
 /// <param name="container">The Cosmos DB container for expenses.</param>
-public class ExpenseService(Container container) : IExpenseService
+public class ExpenseService(Container container, ICacheService cacheService) : IExpenseService
 {
     /// <inheritdoc />
-    public async Task<AddExpenseServiceResponseDto> AddExpense(string ownerId, double amount, string description, int categoryId)
+    public async Task<AddExpenseServiceResponseDto> AddExpense(string ownerId, double amount, string description,
+        int categoryId)
     {
-        var categories = await GetCategories();
+        var categories = GetCategories();
         var categoryIdExist = categories.Select(c => c.Id).Contains(categoryId);
         if (!categoryIdExist)
             return new AddExpenseServiceResponseDto(false, ErrorMessage: "Category id doesn't exist");
-        
+
         var expense = new Expense()
         {
             Id = UniqueIdGenerator.Generate(),
@@ -57,11 +58,11 @@ public class ExpenseService(Container container) : IExpenseService
     {
         if (categoryId.HasValue)
         {
-            var categoryIdExist = (await GetCategories()).Select(c => c.Id).Contains(categoryId.Value);
+            var categoryIdExist = GetCategories().Select(c => c.Id).Contains(categoryId.Value);
             if (!categoryIdExist)
                 return new UpdateExpenseServiceResponseDto(false, ErrorMessage: "Category id doesn't exist");
         }
-        
+
         try
         {
             var response = await container.ReadItemAsync<Expense>(id, new PartitionKey(ownerId));
@@ -73,7 +74,8 @@ public class ExpenseService(Container container) : IExpenseService
             if (date.HasValue) expenseToUpdate.Date = date.Value;
 
             await container.ReplaceItemAsync(expenseToUpdate, id, new PartitionKey(ownerId));
-            expenseToUpdate.Category = (await GetCategories()).FirstOrDefault(c => c.Id == expenseToUpdate.CategoryId);
+            expenseToUpdate.Category =
+                GetCategories().FirstOrDefault(c => c.Id == expenseToUpdate.CategoryId);
             return new UpdateExpenseServiceResponseDto(true, expenseToUpdate);
         }
         catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
@@ -101,7 +103,8 @@ public class ExpenseService(Container container) : IExpenseService
         }
         catch (CosmosException)
         {
-            return new DeleteExpenseServiceResponseDto(false, ErrorMessage: "Unexpected error has occurred while processing your request.");
+            return new DeleteExpenseServiceResponseDto(false,
+                ErrorMessage: "Unexpected error has occurred while processing your request.");
         }
     }
 
@@ -112,13 +115,19 @@ public class ExpenseService(Container container) : IExpenseService
         {
             var response = await container.ReadItemAsync<Expense>(id, new PartitionKey(ownerId));
             var expense = response.Resource;
-            expense.Category = (await GetCategories()).FirstOrDefault(c => c.Id == expense.CategoryId);
+            expense.Category = GetCategories().FirstOrDefault(c => c.Id == expense.CategoryId);
             return expense;
         }
         catch (CosmosException)
         {
             return null;
         }
+    }
+
+    public List<Category> GetCategories()
+    {
+        var cachedCategories = cacheService.Get<List<Category>?>(CategoryService.CacheKey) ?? [];
+        return cachedCategories.OrderBy(category => category.Id).ToList();
     }
 
     /// <inheritdoc />
@@ -128,34 +137,19 @@ public class ExpenseService(Container container) : IExpenseService
         var query = $"SELECT * FROM c WHERE c.OwnerId = '{ownerId}'";
 
         var iterator = container.GetItemQueryIterator<Expense>(new QueryDefinition(query));
-    
+
         while (iterator.HasMoreResults)
         {
             var response = await iterator.ReadNextAsync();
             expenses.AddRange(response);
         }
-        
-        var categories = await GetCategories();
+
+        var categories = GetCategories();
         expenses.ForEach(e => e.Category = categories.FirstOrDefault(c => c.Id == e.CategoryId));
 
         return expenses;
     }
 
-    /// <inheritdoc />
-    public async Task<List<Category>> GetCategories()
-    {
-        var categories = new List<Category>();
-        for (var i = 0; i <= 5; i++)
-        {
-            categories.Add(new Category()
-            {
-                Id = i,
-                Name = $"Category {i}"
-            });
-        }
-        return categories;
-    }
-    
     /// <inheritdoc />
     public async Task<bool> SetReceiptId(string expenseId, string ownerId, string? receiptId)
     {

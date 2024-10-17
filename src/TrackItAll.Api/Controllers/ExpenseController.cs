@@ -125,7 +125,7 @@ public class ExpenseController(IAzureAdTokenService azureAdTokenService, IExpens
     [HttpGet("get-categories")]
     public async Task<IActionResult> GetCategories()
     {
-        var categoriesList = await expenseService.GetCategories();
-        return Ok(categoriesList);
+        var categoriesList = expenseService.GetCategories();
+        return Ok(categoriesList.ToResponseDto());
     }
 }

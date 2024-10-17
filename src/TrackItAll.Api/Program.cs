@@ -1,3 +1,4 @@
+using Azure.Data.Tables;
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Microsoft.Azure.Cosmos;
@@ -26,16 +27,31 @@ builder.Services.AddSingleton<CosmosClient>(_ =>
 builder.Services.AddSingleton<BlobServiceClient>(_ =>
     new BlobServiceClient(builder.Configuration["AzureStorage:ConnectionString"]));
 
+builder.Services.AddSingleton<TableServiceClient>(_ =>
+    new TableServiceClient(builder.Configuration["AzureStorage:ConnectionString"]));
+
 builder.Services.AddSingleton<IContainerFactory, ContainerFactory>();
+
+builder.Services.AddHostedService<CategoryService>(provider =>
+{
+    var cacheService = provider.GetRequiredService<ICacheService>();
+    var containerFactory = provider.GetRequiredService<IContainerFactory>();
+    
+    var tableName = builder.Configuration["AzureTable:TableName"]!;
+    var container = containerFactory.GetTableContainer(tableName);
+    
+    return new CategoryService(cacheService, container);
+});
 
 builder.Services.AddScoped<IExpenseService, ExpenseService>(provider =>
 {
+    var cacheService = provider.GetRequiredService<ICacheService>();
     var containerFactory = provider.GetRequiredService<IContainerFactory>();
     var container = containerFactory.GetCosmosContainer(
         builder.Configuration["AzureCosmos:DatabaseName"]!,
         builder.Configuration["AzureCosmos:ContainerName"]!);
 
-    return new ExpenseService(container);
+    return new ExpenseService(container, cacheService);
 });
 
 builder.Services.AddScoped<IReceiptService, ReceiptService>(provider =>

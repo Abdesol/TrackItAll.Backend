@@ -59,8 +59,8 @@ public interface IExpenseService
     /// <summary>
     /// Retrieves a list of expense categories from Azure Table Storage.
     /// </summary>
-    /// <returns>A task representing the asynchronous operation, with a result of a list of <see cref="Category"/> objects.</returns>
-    Task<List<Category>> GetCategories();
+    /// <returns>A list of <see cref="Category"/> objects.</returns>
+    List<Category> GetCategories();
 
     /// <summary>
     /// Sets the receipt ID for an expense.

@@ -17,6 +17,7 @@
         <PackageReference Include="Microsoft.Identity.Client" Version="4.64.1" />
         <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.42.0" />
         <PackageReference Include="Azure.Storage.Blobs" Version="12.22.2" />
+        <PackageReference Include="Azure.Data.Tables" Version="12.9.1"/>
     </ItemGroup>
 
 </Project>
