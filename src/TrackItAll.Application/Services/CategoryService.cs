@@ -40,7 +40,7 @@ public class CategoryService(ICacheService cacheService, TableClient tableClient
         {
             categories.Add(category);
         }
-        
+        categories = categories.OrderBy(category => category.Id).ToList();
         cacheService.Set(CacheKey, categories, CacheDuration + TimeSpan.FromHours(1));
     }
 }

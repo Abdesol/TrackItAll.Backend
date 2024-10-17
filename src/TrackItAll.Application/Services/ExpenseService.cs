@@ -126,8 +126,8 @@ public class ExpenseService(Container container, ICacheService cacheService) : I
 
     public List<Category> GetCategories()
     {
-        var cachedCategories = cacheService.Get<List<Category>?>(CategoryService.CacheKey) ?? [];
-        return cachedCategories.OrderBy(category => category.Id).ToList();
+        var cachedCategories = cacheService.Get<List<Category>?>(CategoryService.CacheKey);
+        return cachedCategories ?? [];
     }
 
     /// <inheritdoc />
