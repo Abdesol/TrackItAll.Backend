@@ -68,4 +68,13 @@ public interface IExpenseService
     /// <param name="id">id of the receipt from azure blob storage</param>
     /// <returns></returns>
     Task<bool> SetReceiptId(string expenseId, string ownerId, string? receiptId);
+
+    /// <summary>
+    /// Generates an expense report for a given user over a specified date range.
+    /// </summary>
+    /// <param name="ownerId">The unique identifier of the user for whom the report is generated.</param>
+    /// <param name="startDate">The start date of the reporting period.</param>
+    /// <param name="endDate">The end date of the reporting period.</param>
+    /// <returns>A <see cref="ReportServiceResponseDto"/> containing the details of the user's expenses, including the total expenses, highest and lowest expenses, and the top category spent on.</returns>
+    Task<ReportServiceResponseDto> GenerateReport(string ownerId, DateTime startDate, DateTime endDate);
 }

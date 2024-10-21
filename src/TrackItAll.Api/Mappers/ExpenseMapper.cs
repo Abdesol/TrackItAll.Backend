@@ -74,4 +74,17 @@ public static class ExpenseMapper
     {
         return updateExpenseServiceResponseDto.ConvertAll(eventEntity => eventEntity.ToResponseDto(hostPath));
     }
+
+    public static ReportResponseDto ToResponseDto(this ReportServiceResponseDto reportServiceResponseDto,
+        string hostPath)
+    {
+        return new ReportResponseDto(
+            reportServiceResponseDto.ReportStartDate,
+            reportServiceResponseDto.ReportEndDate,
+            reportServiceResponseDto.TotalExpensesAmount,
+            reportServiceResponseDto.HighestExpense?.ToResponseDto(hostPath),
+            reportServiceResponseDto.LowestExpense?.ToResponseDto(hostPath),
+            reportServiceResponseDto.TopCategorySpentOn?.ToResponseDto()
+        );
+    }
 }

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Authorization;
@@ -15,7 +16,10 @@ namespace TrackItAll.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("[controller]")]
-public class ExpenseController(IAzureAdTokenService azureAdTokenService, IExpenseService expenseService)
+public class ExpenseController(
+    IAzureAdTokenService azureAdTokenService,
+    IExpenseService expenseService,
+    IQueueService queueService)
     : BaseController(azureAdTokenService, expenseService)
 {
     /// <summary>
@@ -127,5 +131,33 @@ public class ExpenseController(IAzureAdTokenService azureAdTokenService, IExpens
     {
         var categoriesList = expenseService.GetCategories();
         return Ok(categoriesList.ToResponseDto());
+    }
+
+    /// <summary>
+    /// An endpoint to generate a report based on the expenses.
+    /// </summary>
+    [HttpGet("generate-report")]
+    public async Task<ActionResult> GenerateReport([FromQuery] DateTime startDate,
+        [FromQuery] DateTime endDate, [FromQuery] bool sendToEmail = false)
+    {
+        var oid = await azureAdTokenService.GetUserObjectId(User);
+
+        if (startDate > endDate)
+        {
+            return BadRequest("start date cannot be later than end date.");
+        }
+
+        var reportResponseDto = await expenseService.GenerateReport(oid!, startDate, endDate);
+        if (!reportResponseDto.IsSuccessful)
+            return BadRequest(reportResponseDto.ErrorMessage);
+
+        if (sendToEmail)
+        {
+            var email = await azureAdTokenService.GetUserEmail(User);
+            _ = queueService.AddReportToSendInEmailQueueAsync(email!, reportResponseDto);
+        }
+
+        var hostPath = $"{Request.Scheme}://{Request.Host}";
+        return Ok(reportResponseDto.ToResponseDto(hostPath));
     }
 }

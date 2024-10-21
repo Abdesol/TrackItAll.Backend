@@ -169,4 +169,71 @@ public class ExpenseService(Container container, ICacheService cacheService) : I
             return false;
         }
     }
+
+    /// <inheritdoc />
+    public async Task<ReportServiceResponseDto> GenerateReport(string ownerId, DateTime startDate, DateTime endDate)
+    {
+        try
+        {
+            var query = new QueryDefinition(
+                    "SELECT * FROM c WHERE c.OwnerId = @ownerId AND c.Date >= @startDate AND c.Date <= @endDate")
+                .WithParameter("@ownerId", ownerId)
+                .WithParameter("@startDate", startDate)
+                .WithParameter("@endDate", endDate);
+
+            var iterator = container.GetItemQueryIterator<Expense>(query);
+            var expenses = new List<Expense>();
+
+            while (iterator.HasMoreResults)
+            {
+                var response = await iterator.ReadNextAsync();
+                expenses.AddRange(response);
+            }
+
+            return ProcessTheExpensesForReport(expenses, startDate, endDate);
+        }
+        catch (CosmosException)
+        {
+            return new ReportServiceResponseDto(startDate, endDate, null, null, null, null, false,
+                ErrorMessage: "Unexpected error has occurred while processing your request.");
+        }
+    }
+
+    private ReportServiceResponseDto ProcessTheExpensesForReport(List<Expense> expenses, DateTime startDate,
+        DateTime endDate)
+    {
+        if (expenses.Count == 0)
+        {
+            return new ReportServiceResponseDto(
+                startDate, endDate, 
+                0, null, 
+                null, null
+            );
+        }
+
+        var categories = GetCategories();
+        
+        var totalExpensesAmount = expenses.Sum(expense => expense.Amount);
+        var highestExpense = expenses.OrderByDescending(expense => expense.Amount).FirstOrDefault();
+        var lowestExpense = expenses.OrderBy(expense => expense.Amount).FirstOrDefault();
+        var topCategoryId = expenses
+            .GroupBy(expense => expense.CategoryId)
+            .OrderByDescending(group => group.Sum(expense => expense.Amount))
+            .FirstOrDefault()?.Key;
+
+        Category? topCategory = null;
+
+        if (highestExpense?.CategoryId != null)
+            highestExpense.Category = categories.FirstOrDefault(c => c.Id == highestExpense.CategoryId);
+        
+        if (lowestExpense?.CategoryId != null)
+            lowestExpense.Category = categories.FirstOrDefault(c => c.Id == lowestExpense.CategoryId);
+
+        if (topCategoryId is not null)
+            topCategory = categories.FirstOrDefault(c => c.Id == topCategoryId)!;
+
+        return new ReportServiceResponseDto(
+            startDate, endDate, totalExpensesAmount, 
+            highestExpense, lowestExpense, topCategory);
+    }
 }
