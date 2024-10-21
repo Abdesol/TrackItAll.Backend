@@ -24,6 +24,7 @@ public class QueueService(string connectionString) : IQueueService
         await queueClient.SendMessageAsync(message);
     }
 
+    /// <inheritdoc />
     public async Task AddReportToSendInEmailQueueAsync(string email, ReportServiceResponseDto responseDto)
     {
         var queueClient = new QueueClient(connectionString, "report-to-send-in-email");

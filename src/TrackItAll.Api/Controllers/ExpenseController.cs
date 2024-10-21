@@ -125,7 +125,6 @@ public class ExpenseController(
     /// <summary>
     /// An endpoint to get all the list of categories avaiable with their respective id.
     /// </summary>
-    /// <returns></returns>
     [HttpGet("get-categories")]
     public async Task<IActionResult> GetCategories()
     {
@@ -136,6 +135,7 @@ public class ExpenseController(
     /// <summary>
     /// An endpoint to generate a report based on the expenses.
     /// </summary>
+    [Authorize]
     [HttpGet("generate-report")]
     public async Task<ActionResult> GenerateReport([FromQuery] DateTime startDate,
         [FromQuery] DateTime endDate, [FromQuery] bool sendToEmail = false)
